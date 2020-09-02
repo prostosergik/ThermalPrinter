@@ -25,7 +25,7 @@ import os
 
 class ThermalPrinter(object):
     """
-        Thermal printing library for Custom DPT100-S printer (www.custom.it) 
+        Thermal printing library for 
 
         If on BeagleBone or similar device, remember to set the mux settings
         or change the UART you are using. See the beginning of this file for
@@ -43,7 +43,7 @@ class ThermalPrinter(object):
     # SERIALPORT = '/dev/ttyAMA0'
     SERIALPORT = '/dev/ttyUSB0'
 
-    BAUDRATE = 19200
+    BAUDRATE = 9600
     TIMEOUT = 3
 
     # pixels with more color value (average for multiple channels) are counted as white
@@ -67,71 +67,127 @@ class ThermalPrinter(object):
         #reset
         self.reset()
 
-    # def has_paper(self):
-    #     # Check the status of the paper using the printer's self reporting
-    #     # ability. SerialTX _must_ be connected!
-    #     status = -1
-    #     self.printer.write(self._ESC)
-    #     self.printer.write(chr(118))
-    #     self.printer.write(chr(0))
-    #     for i in range(0, 9):
-    #         if self.printer.inWaiting():
-    #             status = unpack('b', self.printer.read())[0]
-    #             break
-    #         sleep(0.01)
-    #     return not bool(status & 0b00000100)
-
     def reset(self):
+        self.printer.write(self._ESC)
         self.printer.write(self._ESC)
         self.printer.write(b'\x40') # @
         # heat up
         sleep(2)
-    
-    # be careful!
-    def factory_reset(self):
-        self.printer.write(self._GS)
-        self.printer.write(b'\x55') #U
-        self.reset()
+        self.small()
+
 
     def linefeed(self, number=1):
+        self.printer.write(self._ESC)
         for _ in range(number):
-            self.printer.write(b'\x0a') #\n
+            self.printer.write(b'\x4a') #\j
+
+    def normal(self):
+        self.small()
+        
+        self.upside_down(False)
+        self.d_width(False)
+        self.d_height(False)
+        self.expanded(False)
+        self.underline(False)
+        self.reverse(False)
+        self.justify('left')
+        self.alt_font(False)
+
 
     def small(self):
+        self.printer.write(self._GS)
+        self.printer.write(b'\x21')
         self.printer.write(b'\x00')
 
-    def d_width(self):
-        self.printer.write(b'\x01')
+    def alt_font(self, on=True):
+        self.printer.write(self._ESC)
+        self.printer.write(b'\x21')
+        if on:
+            self.printer.write(b'\x01')
+        else:
+            self.printer.write(b'\x00')
 
-    def d_height(self):
-        self.printer.write(b'\x02')
+    def d_width(self, on=True):     
+        # self.printer.write(self._ESC)
+        self.printer.write(self._GS)
+        self.printer.write(b'\x21')
+        if on:
+            self.printer.write(b'\x01')
+        else:
+            self.printer.write(b'\x00')
 
-    def expanded(self):
-        self.printer.write(b'\x03')
+
+    def d_height(self, on=True):     
+        # self.printer.write(self._ESC)
+        self.printer.write(self._GS)
+        self.printer.write(b'\x21')
+        if on:
+            self.printer.write(b'\x10')
+        else:
+            self.printer.write(b'\x00')
+
+    def expanded(self, on=True):
+        self.printer.write(self._ESC)
+        self.printer.write(b'\x20')
+        if on:
+            self.printer.write(b'\x08')
+        else:
+            self.printer.write(b'\x00')
+
+    def bold(self, on=True):
+        self.emphasized(on)
+
+    def strong(self, on=True):
+        self.emphasized(on)
+
+    def emphasized(self, on=True):
+        self.printer.write(self._ESC)
+        self.printer.write(b'\x45')
+        if on:
+            self.printer.write(b'\x01')
+        else:
+            self.printer.write(b'\x00')
+
  
-    def restore_small(self):
-        self.printer.write(b'\x04')
+    # def restore_small(self):
+    #     self.printer.write(b'\x04')
 
     def underline(self, on=True):
         self.printer.write(self._ESC)
+        # self.printer.write(self._ESC)
+        self.printer.write(b'\x2d')
         if on:
-            self.printer.write(b'\x51') #Q
+            self.printer.write(b'\x01') #Q
         else:
-            self.printer.write(b'\x71') #q
+            self.printer.write(b'\x00') #q
+
+    def upside_down(self, on=True):
+        self.printer.write(self._ESC)
+        self.printer.write(b'\x7B') #{
+        if on:
+            self.printer.write(b'\x01') 
+        else:    
+            self.printer.write(b'\x00') 
+
 
     def reverse(self, on=True):
-        self.printer.write(self._ESC)
+        self.printer.write(self._GS)
+        self.printer.write(b'\x42') #R
         if on:
-            self.printer.write(b'\x52') #R
+            self.printer.write(b'\x01') #R
         else:    
-            self.printer.write(b'\x4e') #N
+            self.printer.write(b'\x00') #N
 
-    #buffer
-    def print_buffer(self):
-        self.printer.write(b'\x0D')
-   
-    def cancel_buffer(self):
-        self.printer.write(b'\x07')
+
+    def justify(self, how='left'):
+        self.printer.write(self._ESC)
+        self.printer.write(b'\x61') #a
+        if how=="center":
+            self.printer.write(b'\x01') 
+        elif how == "right":    
+            self.printer.write(b'\x02') 
+        else:
+            self.printer.write(b'\x00') # left
 
     #DRAW
     def graphic_mode(self):
@@ -363,24 +419,62 @@ class ThermalPrinter(object):
 
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
   
-#     p = ThermalPrinter(serialport=serialport)
-#     p.linefeed()
-#     p.print("************************")
-#     p.d_width()
-#     p.print("06.04.2020. 17:52")
-#     p.small()
-#     p.linefeed()
-#     p.print("Total")
-#     p.expanded()
-#     p.print("     223    ")
-#     p.linefeed()
-#     p.d_height()
-#     p.print("Tested: 1915   Budva: 4")
-#     p.small()
-#     p.print("************************")
-#     p.linefeed(4)
+    p = ThermalPrinter()
+    # p.linefeed()
+    p.print("************************")
+    p.small()
+    p.alt_font()
+    p.print("Small")
+    p.alt_font(False)
+    p.print("Small")
+
+    p.alt_font(True)
+    p.d_width()
+    p.print("Double Width")
+
+    p.alt_font(False)
+    p.d_width()
+    p.print("Double Width")
+
+    p.underline()
+    p.print("Underline")
+
+    p.d_height()
+    p.print("Double Height")
+   
+    p.emphasized()
+    p.print("Emphasized")
+
+    p.normal()
+
+    p.expanded()
+    p.print("Expanded")
+    
+    p.upside_down()
+    p.print("Upside Down")
+    
+    p.normal()
+    
+    p.reverse()
+    p.print("Reverse")
+    
+    p.normal()
+
+    p.justify('center')
+    p.print("center")
+
+    p.justify('right')
+    p.print("right")
+
+    p.justify('left')
+    p.print("left")
+
+
+    p.normal()
+    p.print("************************")
+    p.linefeed()
 
 
 # #     markup = """bl bold left
