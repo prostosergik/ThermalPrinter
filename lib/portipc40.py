@@ -91,8 +91,10 @@ class ThermalPrinter(object):
 
     def linefeed(self, number=1):
         for _ in range(number):
-            # self.print()
-            self.printer.write(b'\x0A')
+            self.print(" ") # it's not buggy
+            # self.printer.write(b'\x0A') # it's buggy!
+            # sleep(0.2)
+
         # self.printer.write(b'\x00')
         # self.printer.write(1)
 
@@ -221,14 +223,14 @@ class ThermalPrinter(object):
             empty lines. """
         if not chars_per_line:
             self.printer.write(str.encode(msg))
-            sleep(0.2)
+            sleep(0.3)
         else:
             l = list(msg)
             le = len(msg)
             for i in range(chars_per_line + 1, le, chars_per_line + 1):
                 l.insert(i, '\n')
             self.printer.write(str.encode("".join(l)))
-            sleep(0.2)
+            sleep(0.3)
 
     # def print_markup(self, markup):
     #     """ Print text with markup for styling.

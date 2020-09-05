@@ -7,10 +7,17 @@ p = ThermalPrinter()
 # p.linefeed()
 
 p.small()
-p.size(3,2)
-# p.d_height()
-p.justify('c')
-p.print("5678/912")
+# p.size(3,2)
+# # p.d_height()
+# p.justify('c')
+# p.print("5678/912")
+
+
+# pstr = ""
+# for x in range(30,70):
+# 	pstr = pstr + chr(x)
+
+p.print(chr(31))
 
 
 # p.small()
