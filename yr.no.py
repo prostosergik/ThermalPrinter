@@ -10,7 +10,7 @@ from time import sleep
 
 p = ThermalPrinter()
 p.rf()
-p.linefeed()
+# p.linefeed()
 
 
 location = "Montenegro/Other/Sveti_Spas~3339206"
@@ -38,8 +38,6 @@ if forecast:
 	p.print(soon.get('windSpeed', {}).get('@name') + " " + ('%.1f' % (float(soon.get('windSpeed', {}).get('@mps')) * 3.6)).rstrip('0').rstrip('.') +"km/h, "+ soon.get('windDirection', {}).get('@code') )
 
 	p.linefeed()
-	# p.alt_font()
-	# p.alt_font(False)
 
 	p.rf()
 	for x in range(1, 5):
@@ -48,14 +46,15 @@ if forecast:
 		t_to = datetime.strptime(fc.get('@to'), '%Y-%m-%dT%H:%M:%S').strftime("%H")
 
 		
-		fc_str = "%s - %s:   %s, %.1gkm/h %s, %.1gmm" % (
+		fc_str = "%s-%s:  %s, %skm/h %s,%smm" % (
 					t_from,
 					t_to,
 					fc.get('temperature', {}).get('@value')+chr(31),
-					float(fc.get('windSpeed', {}).get('@mps')) * 3.6,
+					('%.1f' % (float(fc.get('windSpeed',     {}).get('@mps')) * 3.6)).rstrip('0').rstrip('.').rjust(4),
 					fc.get('windDirection', {}).get('@code').rjust(3),
-					float(fc.get('precipitation', {}).get('@value'))
+					('%.1f' % float(fc.get('precipitation', {}).get('@value'))).rstrip('0').rstrip('.').rjust(3),
 				)
+		print(fc_str)
 		p.print(fc_str)
 
 	p.linefeed(3)
