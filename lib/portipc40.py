@@ -70,7 +70,7 @@ class ThermalPrinter(object):
     def __init__(self, heatTime=80, heatInterval=2, heatingDots=7, serialport=SERIALPORT):
 
         if not os.path.exists(serialport):
-            raise("ERROR: Serial port not found at: %s" % serialport)
+            raise Exception("ERROR: Serial port not found at: %s" % serialport)
 
         self.printer = Serial(serialport, self.BAUDRATE, timeout=self.TIMEOUT)
 
