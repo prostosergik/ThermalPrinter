@@ -47,7 +47,7 @@ class ThermalPrinter(object):
     BAUDRATE = 9600
     TIMEOUT = 3
 
-    CHARS_PER_LINE = 42
+    CHARS_PER_LINE = 31
 
     # pixels with more color value (average for multiple channels) are counted as white
     # tweak this if your images appear too black or too white
